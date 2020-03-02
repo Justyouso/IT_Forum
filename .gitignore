@@ -132,3 +132,4 @@ dmypy.json
 .idea
 *.txt
 config.py
+migrations/
