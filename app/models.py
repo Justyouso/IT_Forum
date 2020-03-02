@@ -136,6 +136,7 @@ class User(db.Model):
         :return: str
         """
         s = Serializer(current_app.config["SECRET_KEY"], expiration)
+        print(s)
         return s.dumps({'confirm': self.id})
 
     def confirm(self, token):

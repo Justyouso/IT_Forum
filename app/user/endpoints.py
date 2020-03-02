@@ -3,11 +3,11 @@
 
 from flask import Blueprint
 from flask_restful import Api
-from app.user.views import UserList
-
+from app.user.views import UserList, Register, SecurityCode
 
 user = Blueprint("user", __name__)
 _api = Api(user)
 
 _api.add_resource(UserList, "/tax/records/import")
-
+_api.add_resource(Register, "/register")
+_api.add_resource(SecurityCode, "/code")
