@@ -1,6 +1,6 @@
 version: '3'
 services:
-  article-service:
+  forum-service:
     build: .
     image: forum-service:latest
     container_name: forum-service
