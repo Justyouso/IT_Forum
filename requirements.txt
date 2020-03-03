@@ -9,3 +9,4 @@ redis==2.10.6
 elasticsearch==7.0.4
 elasticsearch_dsl==7.0.0
 requests
+flask_redis==0.4.0
