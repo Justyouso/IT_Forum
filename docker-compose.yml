@@ -5,9 +5,9 @@ services:
     image: forum-service:latest
     container_name: forum-service
     ports:
-      - "5000:80"
+      - "8999:80"
     volumes:
-      - "/workspace/projects/IT-Forum:/app"
+      - "/workspace/project/IT-Forum:/app"
       - "/workspace/logs/IT-Forum:/var/log/uwsgi"
 
     environment:
