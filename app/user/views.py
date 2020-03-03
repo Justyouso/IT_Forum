@@ -83,3 +83,33 @@ class SecurityCode(Resource):
         }
         _ = set_redis_cache(**redis_params)
         return {"data": "", "message": "邮箱验证", "resCode": 0}
+
+
+class Login(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("email", type=str, required=True, default="",
+                                 trim=True, help="邮箱")
+        self.parser.add_argument("password", type=str, required=True,
+                                 default="", trim=True, help="密码")
+
+    def post(self):
+        args = self.parser.parse_args()
+
+        # 先查询是否存在
+        user = User.query.filter_by(email=args["email"]).first()
+        # 验证用户是否存在
+        if not user:
+            return {"data": "", "message": "用户不存在", "resCode": 1}
+
+        # 验证密码
+        if not user.verify_password(args["password"]):
+            return {"data": "", "message": "密码错误", "resCode": 1}
+
+        # 获取token
+        token = user.generate_token()
+        data = {
+            "token": token,
+            "role": user.role.name
+        }
+        return {"data": data, "message": "", "resCode": 0}

@@ -73,7 +73,7 @@ class User(db.Model):
     email = db.Column(db.String(64), unique=True, index=True, doc="邮箱")
     username = db.Column(db.String(64), unique=True, index=True,
                          doc="用户名")
-    password = db.Column(db.String(128), doc="密码")
+    password_hash = db.Column(db.String(128), doc="密码")
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'),
                         doc="权限")
     confirmed = db.Column(db.Boolean, default=False, doc="是否验证")
@@ -129,15 +129,14 @@ class User(db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
-    def generate_confirmation_token(self, expiration=3600):
+    def generate_token(self, expiration=3600):
         """
         生成token
         :param expiration: 有效时间
         :return: str
         """
         s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        print(s)
-        return s.dumps({'confirm': self.id})
+        return s.dumps({'id': self.id, "username": self.username}).decode()
 
     def confirm(self, token):
         """
