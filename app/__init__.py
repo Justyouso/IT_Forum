@@ -6,7 +6,7 @@ from flask import Flask
 from werkzeug.utils import import_string
 
 from app.exts import db, redis_client,mail
-from config import config
+from flask_cors import CORS
 
 
 def register_extensions(app):
@@ -33,6 +33,7 @@ def create_app(config):
     app = Flask(__name__)
     app.config.from_object(config)
     config.init_app(app)
+    CORS(app)
     # db
     db.init_app(app)
     # mail
