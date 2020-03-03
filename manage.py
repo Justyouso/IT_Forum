@@ -6,9 +6,9 @@ from app import create_app, db
 from app.models import User, Role
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
-from config import config_flag
+from config import config_module
 
-app = create_app(config_flag)
+app = create_app(config_module)
 
 # 管理配置
 manager = Manager(app)
