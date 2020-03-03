@@ -1,0 +1,14 @@
+version: '3'
+services:
+  article-service:
+    build: .
+    image: forum-service:latest
+    container_name: forum-service
+    ports:
+      - "5000:80"
+    volumes:
+      - "/workspace/projects/IT-Forum:/app"
+      - "/workspace/logs/IT-Forum:/var/log/uwsgi"
+
+    environment:
+      UWSGI_INI: /app/uwsgi.ini
