@@ -7,8 +7,8 @@ services:
     ports:
       - "8999:80"
     volumes:
-      - "/workspace/project/IT-Forum:/app"
-      - "/workspace/logs/IT-Forum:/var/log/uwsgi"
+      - "/workspace/project/IT_Forum:/app"
+      - "/workspace/logs/IT_Forum:/var/log/uwsgi"
 
     environment:
       UWSGI_INI: /app/uwsgi.ini
