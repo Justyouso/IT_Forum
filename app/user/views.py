@@ -101,12 +101,12 @@ class Login(Resource):
                                  trim=True, help="邮箱")
         self.parser.add_argument("password", type=str, required=True,
                                  default="", trim=True, help="密码")
-        self.parser.add_argument("code", type=str, required=True,
-                                 default="", trim=True, help="密码")
-        self.parser.add_argument("module", type=str, required=True,
-                                 default="", trim=True, help="模块值",
-                                 choices=["login", "register", "forget",
-                                          "other"])
+        # self.parser.add_argument("code", type=str, required=True,
+        #                          default="", trim=True, help="密码")
+        # self.parser.add_argument("module", type=str, required=True,
+        #                          default="", trim=True, help="模块值",
+        #                          choices=["login", "register", "forget",
+        #                                   "other"])
 
     def post(self):
         args = self.parser.parse_args()
@@ -118,9 +118,9 @@ class Login(Resource):
             return {"data": "", "message": "用户不存在", "resCode": 1}
 
         # 判断验证码
-        code = get_redis_cahe(args["module"] + args["email"])
-        if args["code"].upper() != code:
-            return {"data": "", "message": "验证码错误", "resCode": 1}
+        # code = get_redis_cahe(args["module"] + args["email"])
+        # if args["code"].upper() != code:
+        #     return {"data": "", "message": "验证码错误", "resCode": 1}
 
         # 验证密码
         if not user.verify_password(args["password"]):
