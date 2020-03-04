@@ -82,12 +82,12 @@ class SecurityCode(Resource):
         # 生成验证码
         code = generate_code()
         # 发送邮箱
-        send_mail(args["module"] + args["email"], '验证账号', code=code,
+        send_mail(args["email"], '验证账号', code=code,
                   user=args["email"])
 
         # 验证码写入redis
         redis_params = {
-            "key": args["email"],
+            "key": args["module"]+args["email"],
             "value": code
         }
         _ = set_redis_cache(**redis_params)
