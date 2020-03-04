@@ -41,6 +41,10 @@ class Register(Resource):
                                  default="", trim=True, help="密码")
         self.parser.add_argument("code", type=str, required=True,
                                  default="", trim=True, help="验证码")
+        self.parser.add_argument("module", type=str, required=True,
+                                 default="", trim=True, help="模块值",
+                                 choices=["login", "register", "forget",
+                                          "other"])
 
     def post(self):
         args = self.parser.parse_args()
@@ -50,7 +54,7 @@ class Register(Resource):
         if user:
             return {"data": "", "message": "用户已注册", "resCode": 1}
         # 判断验证码
-        code = get_redis_cahe(args["email"])
+        code = get_redis_cahe(args["module"] + args["email"])
         if args["code"].upper() != code:
             return {"data": "", "message": "验证码错误", "resCode": 1}
 
@@ -67,6 +71,10 @@ class SecurityCode(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("email", type=str, required=True, default="",
                                  trim=True, help="邮箱")
+        self.parser.add_argument("module", type=str, required=True,
+                                 default="", trim=True, help="模块值",
+                                 choices=["login", "register", "forget",
+                                          "other"])
 
     def get(self):
         args = self.parser.parse_args()
@@ -74,7 +82,8 @@ class SecurityCode(Resource):
         # 生成验证码
         code = generate_code()
         # 发送邮箱
-        send_mail(args["email"], '验证账号', code=code, user=args["email"])
+        send_mail(args["module"] + args["email"], '验证账号', code=code,
+                  user=args["email"])
 
         # 验证码写入redis
         redis_params = {
@@ -92,6 +101,12 @@ class Login(Resource):
                                  trim=True, help="邮箱")
         self.parser.add_argument("password", type=str, required=True,
                                  default="", trim=True, help="密码")
+        self.parser.add_argument("code", type=str, required=True,
+                                 default="", trim=True, help="密码")
+        self.parser.add_argument("module", type=str, required=True,
+                                 default="", trim=True, help="模块值",
+                                 choices=["login", "register", "forget",
+                                          "other"])
 
     def post(self):
         args = self.parser.parse_args()
@@ -101,6 +116,11 @@ class Login(Resource):
         # 验证用户是否存在
         if not user:
             return {"data": "", "message": "用户不存在", "resCode": 1}
+
+        # 判断验证码
+        code = get_redis_cahe(args["module"] + args["email"])
+        if args["code"].upper() != code:
+            return {"data": "", "message": "验证码错误", "resCode": 1}
 
         # 验证密码
         if not user.verify_password(args["password"]):
