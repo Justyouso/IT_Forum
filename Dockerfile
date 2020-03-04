@@ -5,6 +5,8 @@ ENV UWSGI_CHEAPER 4
 
 WORKDIR /app
 
+# 换源
+COPY ./pip.conf /root/.pip/pip.conf
 COPY requirements.txt /app
 
 RUN pip install -r requirements.txt
