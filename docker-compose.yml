@@ -9,6 +9,12 @@ services:
     volumes:
       - "/workspace/project/IT_Forum:/app"
       - "/workspace/logs/IT_Forum:/var/log/uwsgi"
-
     environment:
       UWSGI_INI: /app/uwsgi.ini
+
+    depends_on:
+      - redis
+  redis:
+    images: redis
+    ports:
+     - "6379:6379"
