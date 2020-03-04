@@ -2,8 +2,8 @@
 # @Author: wangchao
 # @Time: 20-3-2 下午8:47
 
-# from app import redis_client
-from app.exts import redis_db as redis_client
+from app import redis_client
+# from app.exts import redis_db as redis_client
 
 import random
 

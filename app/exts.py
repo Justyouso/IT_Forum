@@ -18,7 +18,7 @@ mail = Mail()
 # create redis client
 redis_client = FlaskRedis()
 
-redis_db = Redis(host='redis',port=6379)
+# redis_db = Redis(**config_module.REDIS_DB)
 
 # create thread pool
 pools = ThreadPoolExecutor(10)
