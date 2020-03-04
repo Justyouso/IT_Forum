@@ -15,6 +15,7 @@ services:
     depends_on:
       - redis
   redis:
-    images: redis
+    image: redis:latest
+    container_name: forum-redis
     ports:
      - "6379:6379"
