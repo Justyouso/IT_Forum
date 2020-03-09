@@ -5,7 +5,7 @@ from flask_restful import Resource, reqparse
 from app.models import User
 from app import db
 from app.email import send_mail
-from app.utlis import generate_code, set_redis_cache, get_redis_cahe
+from app.utlis.tools import generate_code, set_redis_cache, get_redis_cahe
 from sqlalchemy import or_
 
 
