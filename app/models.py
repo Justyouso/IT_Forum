@@ -242,12 +242,12 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, doc="标题")
     body = db.Column(db.Text, doc="内容")
+    body_md = db.Column(db.Text, doc="内容markdown")
     body_html = db.Column(db.Text, doc="内容带html")
     timestamp = db.Column(db.DateTime, index=True,
                           default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'),
                           doc="作者")
-
     comments = db.relationship('Comment', backref='article', lazy='dynamic',
                                doc="评论")
 
