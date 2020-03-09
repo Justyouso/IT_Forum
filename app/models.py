@@ -251,6 +251,21 @@ class Article(db.Model):
     comments = db.relationship('Comment', backref='article', lazy='dynamic',
                                doc="评论")
 
+    @staticmethod
+    def create(**kwargs):
+        import re
+        pattern = '<h1><a id="_0"></a>(.*?)</h1>'
+        ret = re.findall(pattern, kwargs["body_html"])[0]
+        kwargs["title"] = ret if ret else ""
+        try:
+            article = Article(**kwargs)
+            db.session.add(article)
+            db.session.commit()
+            return True
+        except Exception as ex:
+            print(str(ex))
+            return False
+
 
 # 监听body字段
 # db.event.listen(Post.body, 'set', Post.on_changed_body)
