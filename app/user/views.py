@@ -6,6 +6,7 @@ from app.models import User
 from app import db
 from app.email import send_mail
 from app.utlis import generate_code, set_redis_cache, get_redis_cahe
+from sqlalchemy import or_
 
 
 class UserList(Resource):
@@ -50,7 +51,9 @@ class Register(Resource):
         args = self.parser.parse_args()
 
         # 先查询是否存在
-        user = User.query.filter_by(email=args["email"]).first()
+        user = User.query.filter(
+            or_(User.email == args["email"],
+                User.username == args["username"])).first()
         if user:
             return {"data": "", "message": "用户已注册", "resCode": 1}
         # 判断验证码
@@ -130,6 +133,8 @@ class Login(Resource):
         token = user.generate_token()
         data = {
             "token": token,
-            "role": user.role.name
+            "role": user.role.name,
+            "username": user.username,
+            "uid": user.id
         }
         return {"data": data, "message": "", "resCode": 0}
