@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # @Author: wangchao
 # @Time: 20-3-2 上午9:15
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse,marshal
 from app.models import Article
+from app.article.serializers import ArticleListSerializer
 
 
 class ArticleCreate(Resource):
@@ -23,3 +24,23 @@ class ArticleCreate(Resource):
         else:
             data = {"data": "", "message": "添加失败", "resCode": 1}
         return data
+
+
+class ArticleList(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("pre_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("keywords", type=str, default="", trim=True,
+                                 help="关键词")
+
+    def get(self):
+        args = self.parser.parse_args()
+        articles = Article.query.filter(Article.body_html.like(
+            "%" + args["keywords"] + "%") if args["keywords"] is not None else "").order_by(
+            Article.timestamp.desc()).paginate(
+            args["page"], per_page=args["pre_page"], error_out=False
+        )
+        data = [marshal(item, ArticleListSerializer) for item in articles.items]
+
+        return {"data": data, "message": "", "resCode": 0}
