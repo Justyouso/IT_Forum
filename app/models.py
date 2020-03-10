@@ -94,6 +94,8 @@ class User(db.Model):
     comments = db.relationship('Comment', backref='author', lazy='dynamic',
                                doc="评论")
     topic = db.Column(db.String(128), doc="用户关注的主题")
+    timestamp = db.Column(db.DateTime, index=True,
+                          default=datetime.utcnow)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)

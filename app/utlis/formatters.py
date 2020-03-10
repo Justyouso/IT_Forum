@@ -11,6 +11,6 @@ class AuthorFormatter(fields.Raw):
         return value.username
 
 
-class CommentsFormatter(fields.Raw):
+class CountFormatter(fields.Raw):
     def format(self, value):
         return value.count()

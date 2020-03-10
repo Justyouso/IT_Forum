@@ -4,10 +4,10 @@
 
 from flask import Blueprint
 from flask_restful import Api
-from app.article.views import ArticleCreate,ArticleList
+from app.article.views import ArticleCreate, ArticleNewList
 
 article = Blueprint("article", __name__)
 _api = Api(article)
 
 _api.add_resource(ArticleCreate, "/create")
-_api.add_resource(ArticleList, "/list")
+_api.add_resource(ArticleNewList, "/new/list")

@@ -2,7 +2,7 @@
 # @Author: wangchao
 # @Time: 20-3-9 下午5:57
 from flask_restful import fields
-from app.utlis.formatters import AuthorFormatter,CommentsFormatter
+from app.utlis.formatters import AuthorFormatter, CountFormatter
 
 ArticleListSerializer = {
     "id": fields.String(default=""),
@@ -12,5 +12,5 @@ ArticleListSerializer = {
     "author_id": fields.Integer,
     "author": AuthorFormatter(default=""),
     "read": fields.Integer(default=0),
-    "comments": CommentsFormatter(default=0)
+    "comments": CountFormatter(default=0)
 }

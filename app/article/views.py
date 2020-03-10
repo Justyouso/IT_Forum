@@ -26,7 +26,7 @@ class ArticleCreate(Resource):
         return data
 
 
-class ArticleList(Resource):
+class ArticleNewList(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
