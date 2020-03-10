@@ -134,3 +134,46 @@ class Login(Resource):
             "uid": user.id
         }
         return {"data": data, "message": "", "resCode": 0}
+
+
+class UserFollow(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("user", type=int, required=True, help="用户Id")
+        self.parser.add_argument("author", type=int, required=True,
+                                 help="关注/取消关注作者Id")
+        self.parser.add_argument("type", type=int, required=True,
+                                 choices=[0, 1, 2],
+                                 help="0:取消关注,1:关注,2:查看用户关注作者")
+
+    def get(self):
+        args = self.parser.parse_args()
+        # 判断用户是否存在
+        user = User.query.filter_by(id=args["user"]).first()
+        if not user:
+            return {"data": "", "message": "无效用户", "resCode": 1}
+        # 判断作者是否存在
+        author = User.query.filter_by(id=args["author"]).first()
+        if not author:
+            return {"data": "", "message": "无效作者", "resCode": 1}
+
+        # 判断取消关注
+        if args["type"] == 0:
+            # 判断用户是否关注过作者
+            if user.is_following(author):
+                user.unfollow(author)
+                result = {"data": "取消关注", "message": "", "resCode": 0}
+            else:
+                result = {"data": "", "message": "你没有关注此作者", "resCode": 1}
+        # 判断取消关注
+        elif args["type"] == 1:
+            if user.is_following(author):
+                result = {"data": "", "message": "你已关注此作者", "resCode": 1}
+            else:
+                user.follow(author)
+                result = {"data": "关注成功", "message": "", "resCode": 0}
+        # 判断查看是否关注
+        else:
+            result = {"data": user.is_following(author), "message": "",
+                      "resCode": 0}
+        return result
