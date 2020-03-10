@@ -44,3 +44,14 @@ class ArticleNewList(Resource):
         data = [marshal(item, ArticleListSerializer) for item in articles.items]
 
         return {"data": data, "message": "", "resCode": 0}
+
+
+class ArticleDetail(Resource):
+    def get(self, id):
+        article = Article.query.filter_by(id=id).first()
+        if article:
+            data = {"data": marshal(article, ArticleListSerializer),
+                    "message": "", "resCode": 0}
+        else:
+            data = {"data": "", "message": "文章不存在", "resCode": 1}
+        return data
