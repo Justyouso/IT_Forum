@@ -9,6 +9,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from app import db
 import hashlib
+import re
 
 
 # 角色
@@ -253,13 +254,20 @@ class Article(db.Model):
 
     @staticmethod
     def create(**kwargs):
-        import re
         pattern = '<h1><a id="_0"></a>(.*?)</h1>'
         ret = re.findall(pattern, kwargs["body_html"])[0]
         kwargs["title"] = ret if ret else ""
+
+        article = Article.query.filter_by(title=kwargs["title"],
+                                          author_id=kwargs["author_id"]).first()
         try:
-            article = Article(**kwargs)
-            db.session.add(article)
+            if article:
+                article.body_html = kwargs["body_html"]
+                article.body_md = kwargs["body_md"]
+            else:
+                article = Article(**kwargs)
+                db.session.add(article)
+
             db.session.commit()
             return True
         except Exception as ex:
