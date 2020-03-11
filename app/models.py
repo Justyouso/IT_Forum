@@ -258,7 +258,7 @@ class Article(db.Model):
     @staticmethod
     def create(**kwargs):
         # 使用BeautifulSoup提取标题和简要
-        soup = BeautifulSoup(kwargs["body_html"])
+        soup = BeautifulSoup(kwargs["body_html"],"html.parser")
         # 获取标题
         title = soup.find("h1").text
         kwargs["title"] = title if title else ""
