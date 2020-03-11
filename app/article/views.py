@@ -3,7 +3,8 @@
 # @Time: 20-3-2 上午9:15
 from flask_restful import Resource, reqparse,marshal
 from app.models import Article
-from app.article.serializers import ArticleListSerializer
+from app.article.serializers import ArticleListSerializer, \
+    ArticleDetailSerializer
 
 
 class ArticleCreate(Resource):
@@ -50,7 +51,7 @@ class ArticleDetail(Resource):
     def get(self, id):
         article = Article.query.filter_by(id=id).first()
         if article:
-            data = {"data": marshal(article, ArticleListSerializer),
+            data = {"data": marshal(article, ArticleDetailSerializer),
                     "message": "", "resCode": 0}
         else:
             data = {"data": "", "message": "文章不存在", "resCode": 1}

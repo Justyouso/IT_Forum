@@ -258,12 +258,15 @@ class Article(db.Model):
     @staticmethod
     def create(**kwargs):
         # 使用BeautifulSoup提取标题和简要
-        soup = BeautifulSoup(kwargs["body_html"],"html.parser")
+        soup = BeautifulSoup(kwargs["body_html"], "html.parser")
+
+        # 获取body
+        kwargs["body"] = soup.get_text().replace("\n", "")
         # 获取标题
         title = soup.find("h1").text
         kwargs["title"] = title if title else ""
 
-        # 去掉h1标签,且去掉回车符号,且取前100个字符作为简介
+        # 获取摘要,去掉h1标签,且去掉回车符号,且取前100个字符作为简介
         [s.extract() for s in soup("h1")]
         kwargs["summary"] = soup.get_text().replace("\n", "")[:100]
 
@@ -275,6 +278,7 @@ class Article(db.Model):
                 article.body_md = kwargs["body_md"]
                 article.summary = kwargs["summary"]
                 article.title = kwargs["title"]
+                article.body = kwargs["body"]
             else:
                 article = Article(**kwargs)
                 db.session.add(article)
