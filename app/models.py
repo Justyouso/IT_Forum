@@ -9,7 +9,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from app import db
 import hashlib
-import re
+from bs4 import BeautifulSoup
 
 
 # 角色
@@ -244,6 +244,7 @@ class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, doc="标题")
+    summary = db.Column(db.Text, doc="摘要")
     body = db.Column(db.Text, doc="内容")
     body_md = db.Column(db.Text, doc="内容markdown")
     body_html = db.Column(db.Text, doc="内容带html")
@@ -256,9 +257,15 @@ class Article(db.Model):
 
     @staticmethod
     def create(**kwargs):
-        pattern = '<h1><a id="_0"></a>(.*?)</h1>'
-        ret = re.findall(pattern, kwargs["body_html"])[0]
-        kwargs["title"] = ret if ret else ""
+        # 使用BeautifulSoup提取标题和简要
+        soup = BeautifulSoup(kwargs["body_html"])
+        # 获取标题
+        title = soup.find("h1").text
+        kwargs["title"] = title if title else ""
+
+        # 去掉h1标签,且去掉回车符号,且取前100个字符作为简介
+        [s.extract() for s in soup("h1")]
+        kwargs["summary"] = soup.get_text().replace("\n", "")[:100]
 
         article = Article.query.filter_by(title=kwargs["title"],
                                           author_id=kwargs["author_id"]).first()
@@ -266,6 +273,8 @@ class Article(db.Model):
             if article:
                 article.body_html = kwargs["body_html"]
                 article.body_md = kwargs["body_md"]
+                article.summary = kwargs["summary"]
+                article.title = kwargs["title"]
             else:
                 article = Article(**kwargs)
                 db.session.add(article)

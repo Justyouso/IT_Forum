@@ -7,6 +7,7 @@ from app.utlis.formatters import AuthorFormatter, CountFormatter
 ArticleListSerializer = {
     "id": fields.String(default=""),
     "title": fields.String(default=""),
+    "summary": fields.String(default=""),
     "body_md": fields.String(default=""),
     "body_html": fields.String(default=""),
     "author_id": fields.Integer,
