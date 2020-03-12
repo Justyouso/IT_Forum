@@ -14,7 +14,7 @@ class UserNewList(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
-        self.parser.add_argument("pre_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
         self.parser.add_argument("user", type=str, default='', help="用户ID")
 
     def get(self):
@@ -29,15 +29,17 @@ class UserNewList(Resource):
             authors = User.query.filter(
                 not_(User.id.in_(followed_ids))).order_by(
                 User.timestamp.desc()).paginate(
-                args["page"], per_page=args["pre_page"], error_out=False
+                args["page"], per_page=args["per_page"], error_out=False
             )
         else:
             authors = User.query.filter().order_by(
                 User.timestamp.desc()).paginate(
-                args["page"], per_page=args["pre_page"], error_out=False
+                args["page"], per_page=args["per_page"], error_out=False
             )
         data = [marshal(item, UserListSerializer) for item in authors.items]
-        page_info = {"pages": authors.pages, "total": authors.total}
+        page_info = {"pages": authors.pages, "total": authors.total,
+                     "page": authors.page, "has_next": authors.has_next,
+                     "has_prev": authors.has_prev}
 
         return {"data": data, "pageInfo": page_info, "message": "",
                 "resCode": 0}
