@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # @Author: wangchao
 # @Time: 20-3-2 上午9:15
-from flask_restful import Resource, reqparse,marshal
+from flask_restful import Resource, reqparse, marshal
 from app.models import User
 from app import db
 from app.email import send_mail
 from app.utlis.tools import generate_code, set_redis_cache, get_redis_cahe
-from sqlalchemy import or_,not_
+from sqlalchemy import or_, not_
 from app.user.serializers import UserListSerializer
 
 
@@ -15,14 +15,17 @@ class UserNewList(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
         self.parser.add_argument("pre_page", type=int, default=10, help="每页数量")
-        self.parser.add_argument("user",type=str,default='',help="用户ID")
+        self.parser.add_argument("user", type=str, default='', help="用户ID")
 
     def get(self):
         args = self.parser.parse_args()
         if args['user']:
             user = User.query.filter_by(id=args['user']).first()
+            if not user:
+                return {"data": "", "message": "用户不存在", "resCode": 1}
             followed_ids = [item.followed_id for item in
-                            user.followed.all()].append(args['user'])
+                            user.followed.all()]
+            followed_ids.append(args['user'])
             authors = User.query.filter(
                 not_(User.id.in_(followed_ids))).order_by(
                 User.timestamp.desc()).paginate(
@@ -36,7 +39,8 @@ class UserNewList(Resource):
         data = [marshal(item, UserListSerializer) for item in authors.items]
         page_info = {"pages": authors.pages, "total": authors.total}
 
-        return {"data": data, "pageInfo": page_info, "message": "", "resCode": 0}
+        return {"data": data, "pageInfo": page_info, "message": "",
+                "resCode": 0}
 
 
 class Register(Resource):
@@ -98,7 +102,7 @@ class SecurityCode(Resource):
 
         # 验证码写入redis
         redis_params = {
-            "key": args["module"]+args["email"],
+            "key": args["module"] + args["email"],
             "value": code
         }
         _ = set_redis_cache(**redis_params)
