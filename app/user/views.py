@@ -38,7 +38,7 @@ class UserNewList(Resource):
             )
         data = [marshal(item, UserListSerializer) for item in authors.items]
         page_info = {"pages": authors.pages, "total": authors.total,
-                     "page": authors.page, "has_next": authors.has_next,
+                     "page": authors.page, "per_page": authors.per_page, "has_next": authors.has_next,
                      "has_prev": authors.has_prev}
 
         return {"data": data, "pageInfo": page_info, "message": "",
