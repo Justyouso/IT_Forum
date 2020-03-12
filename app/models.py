@@ -86,10 +86,10 @@ class User(db.Model):
     followed = db.relationship('Follow', foreign_keys=[Follow.follower_id],
                                backref=db.backref('follower', lazy='joined'),
                                lazy='dynamic', cascade='all,delete-orphan',
-                               doc="关注我的用户")
+                               doc="我关注的人")
     followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
                                 backref=db.backref('followed', lazy='joined',
-                                                   doc="关注用户"),
+                                                   doc="关注我的人"),
                                 lazy='dynamic', cascade='all,delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy='dynamic',
                                doc="评论")
