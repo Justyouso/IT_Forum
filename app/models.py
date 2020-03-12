@@ -254,6 +254,7 @@ class Article(db.Model):
                           doc="作者")
     comments = db.relationship('Comment', backref='article', lazy='dynamic',
                                doc="评论")
+    read = db.Column(db.Integer, default=0, doc="阅读量")
 
     @staticmethod
     def create(**kwargs):

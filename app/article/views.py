@@ -5,6 +5,7 @@ from flask_restful import Resource, reqparse,marshal
 from app.models import Article
 from app.article.serializers import ArticleListSerializer, \
     ArticleDetailSerializer
+from app import db
 
 
 class ArticleCreate(Resource):
@@ -51,6 +52,11 @@ class ArticleDetail(Resource):
     def get(self, id):
         article = Article.query.filter_by(id=id).first()
         if article:
+            try:
+                article.read += 1
+                db.session.commit()
+            except Exception as ex:
+                print(ex)
             data = {"data": marshal(article, ArticleDetailSerializer),
                     "message": "", "resCode": 0}
         else:
