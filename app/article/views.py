@@ -43,14 +43,13 @@ class ArticleNewList(Resource):
         args = self.parser.parse_args()
 
         # 组装查询参数
+        params = and_()
+        if args["author"]:
+            params = and_(params, Article.author_id == args["author"])
+        if args["keywords"]:
+            params = and_(params,
+                          Article.body.like("%" + args["keywords"] + "%"))
 
-        params = and_(
-            Article.author_id == args["author"]
-            if args["author"] is not None else "",
-            Article.body.like("%" + args["keywords"] + "%")
-            if args["keywords"] is not None else ""
-
-        )
         articles = Article.query.filter(params).order_by(
             Article.timestamp.desc()).paginate(
             args["page"], per_page=args["pre_page"], error_out=False
