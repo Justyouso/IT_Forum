@@ -6,6 +6,7 @@ from app.models import Article
 from app.article.serializers import ArticleListSerializer, \
     ArticleDetailSerializer
 from app import db
+from sqlalchemy import and_
 
 
 class ArticleCreate(Resource):
@@ -33,13 +34,24 @@ class ArticleNewList(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
         self.parser.add_argument("pre_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("author", type=str, default="", trim=True,
+                                 help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
                                  help="关键词")
 
     def get(self):
         args = self.parser.parse_args()
-        articles = Article.query.filter(Article.body_html.like(
-            "%" + args["keywords"] + "%") if args["keywords"] is not None else "").order_by(
+
+        # 组装查询参数
+
+        params = and_(
+            Article.author_id == args["author"]
+            if args["author"] is not None else "",
+            Article.body.like("%" + args["keywords"] + "%")
+            if args["keywords"] is not None else ""
+
+        )
+        articles = Article.query.filter(params).order_by(
             Article.timestamp.desc()).paginate(
             args["page"], per_page=args["pre_page"], error_out=False
         )
