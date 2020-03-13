@@ -38,7 +38,8 @@ class UserNewList(Resource):
             )
         data = [marshal(item, UserListSerializer) for item in authors.items]
         page_info = {"pages": authors.pages, "total": authors.total,
-                     "page": authors.page, "per_page": authors.per_page, "has_next": authors.has_next,
+                     "page": authors.page, "per_page": authors.per_page,
+                     "has_next": authors.has_next,
                      "has_prev": authors.has_prev}
 
         return {"data": data, "pageInfo": page_info, "message": "",
@@ -167,7 +168,7 @@ class UserFollow(Resource):
     def get(self):
         args = self.parser.parse_args()
         # 判断用户是否进行自我关注操作
-        if args["user"] == args["author"]:
+        if (args["user"] == args["author"]) and (args["type"] != 2):
             return {"data": "", "message": "自我操作无效", "resCode": 1}
         # 判断用户是否存在
         user = User.query.filter_by(id=args["user"]).first()
