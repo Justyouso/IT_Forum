@@ -199,3 +199,18 @@ class UserFollow(Resource):
             result = {"data": user.is_following(author), "message": "",
                       "resCode": 0}
         return result
+
+
+class UserIndex(Resource):
+    def get(self, id):
+        user = User.query.filter_by(id=id).first()
+        if not user:
+            return {"data": "", "message": "用户不存在", "resCode": 1}
+        data = {
+            "followed": user.followed.count(),
+            "fans": user.followers.count(),
+            "articles": user.article.count(),
+            "about_me": user.about_me
+        }
+
+        return {"data": data, "message": "", "resCode": 0}
