@@ -207,6 +207,7 @@ class UserIndex(Resource):
         if not user:
             return {"data": "", "message": "用户不存在", "resCode": 1}
         data = {
+            "name": user.username,
             "followed": user.followed.count(),
             "fans": user.followers.count(),
             "articles": user.article.count(),
