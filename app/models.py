@@ -219,6 +219,10 @@ class User(db.Model):
     def is_following(self, user):
         return self.followed.filter_by(followed_id=user.id).first() is not None
 
+    def is_following_by_id(self, user_id):
+        """通过ID进行判断是否关注"""
+        return self.followed.filter_by(followed_id=user_id).first() is not None
+
     def is_followed_by(self, user):
         return self.followers.filter_by(follower_id=user.id).first() is not None
 

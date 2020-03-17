@@ -5,7 +5,7 @@
 from flask import Blueprint
 from flask_restful import Api
 from app.user.views import UserNewList, Register, SecurityCode, Login, \
-    UserFollow,UserIndex
+    UserFollow,UserIndex,UserIndexFollow
 
 user = Blueprint("user", __name__)
 _api = Api(user)
@@ -22,3 +22,5 @@ _api.add_resource(Login, "/login")
 _api.add_resource(UserFollow, "/follow")
 # 用户主页
 _api.add_resource(UserIndex, "/index/<string:id>")
+# 用户关注列表
+_api.add_resource(UserIndexFollow, "/index/follows/<string:id>")

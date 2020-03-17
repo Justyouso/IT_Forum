@@ -215,3 +215,50 @@ class UserIndex(Resource):
         }
 
         return {"data": data, "message": "", "resCode": 0}
+
+
+class UserIndexFollow(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("user", type=str, help="用户Id")
+        self.parser.add_argument("type", type=str, required=True,
+                                 default="fans", choices=["followed", "fans"],
+                                 help="类型,followed:关注，fans:粉丝")
+
+    def get(self, id):
+        args = self.parser.parse_args()
+        author = User.query.filter_by(id=id).first()
+        if not author:
+            return {"data": "", "message": "作者不存在", "resCode": 1}
+        # 获取作者关注的人
+        f_data = author.followed.all() \
+            if args["type"] == "followed" else author.followers.all()
+        data = []
+
+        # 判断获取关注列表还是粉丝列表
+
+        for item in f_data:
+            f = item.followed if args["type"] == "followed" else item.follower
+            tmp = {
+                "id": f.id,
+                "name": f.username,
+                "followed": f.followed.count(),
+                "fans": f.followers.count(),
+                "articles": f.article.count(),
+                "is_followed": True
+            }
+            data.append(tmp)
+
+        # 判断用户是否存在，用户不存在即匿名用户
+        if args["user"]:
+            user = User.query.filter_by(id=args["user"]).first()
+            # 若用户和作者不想相等，则需要一个个去判断作者关注的人是否被用户关注
+            if args["user"] != id:
+                for i in data:
+                    i["is_followed"] = user.is_following_by_id(i["id"])
+        else:
+            # 匿名用户所有为未关注
+            for i in data:
+                i["is_followed"] = False
+
+        return {"data": data, "message": "", "resCode": 0}
