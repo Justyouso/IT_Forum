@@ -6,7 +6,8 @@ from app.models import Article
 from app.article.serializers import ArticleListSerializer, \
     ArticleDetailSerializer
 from app import db
-from sqlalchemy import and_
+from sqlalchemy import and_,not_
+from app.utlis.tools import generate_words
 
 
 class ArticleCreate(Resource):
@@ -33,7 +34,7 @@ class ArticleNewList(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
-        self.parser.add_argument("pre_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
         self.parser.add_argument("author", type=str, default="", trim=True,
                                  help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
@@ -52,7 +53,7 @@ class ArticleNewList(Resource):
 
         articles = Article.query.filter(params).order_by(
             Article.timestamp.desc()).paginate(
-            args["page"], per_page=args["pre_page"], error_out=False
+            args["page"], per_page=args["per_page"], error_out=False
         )
         data = [marshal(item, ArticleListSerializer) for item in articles.items]
 
@@ -73,3 +74,38 @@ class ArticleDetail(Resource):
         else:
             data = {"data": "", "message": "文章不存在", "resCode": 1}
         return data
+
+
+class ArticleWordCloud(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("articles",type=str, default="", trim=True,
+                                 help="文章ID，使用逗号隔开")
+        self.parser.add_argument("author", type=str, default="", trim=True,
+                                 help="作者ID")
+        self.parser.add_argument("keywords", type=str, default="", trim=True,
+                                 help="关键词")
+
+    def get(self):
+        args = self.parser.parse_args()
+
+        # 组装查询参数
+        params = and_()
+        if args["author"]:
+            params = and_(params, Article.author_id == args["author"])
+        if args["keywords"]:
+            params = and_(params,
+                          Article.body.like("%" + args["keywords"] + "%"))
+        if args["articles"]:
+            article_ids = [args["articles"].split(",")]
+            params = and_(params, Article.id.in_(article_ids))
+
+        articles = Article.query.filter(params).order_by(
+            Article.timestamp.desc()).paginate(
+            args["page"], per_page=args["per_page"], error_out=False
+        )
+
+        data = generate_words([i.body for i in articles.items])
+        return {"data": data, "message": "", "resCode": 0}

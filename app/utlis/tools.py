@@ -5,6 +5,9 @@
 from app import redis_client
 
 import random
+import jieba
+from jieba import analyse
+from config import basedir
 
 
 def set_redis_cache(key, value, time=600):
@@ -24,7 +27,7 @@ def set_redis_cache(key, value, time=600):
     return result
 
 
-def get_redis_cahe(key):
+def get_redis_cache(key):
     return redis_client.get(key).decode()
 
 
@@ -42,3 +45,9 @@ def generate_code():
             temp = random.randint(0, 9)
         code += str(temp)
     return code
+
+
+def generate_words(string_list):
+    """词云列表"""
+    return [{"key": x, "value": w} for x, w in
+            analyse.textrank(','.join(string_list), topK=200, withWeight=True)]

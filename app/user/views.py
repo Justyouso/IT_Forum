@@ -5,7 +5,7 @@ from flask_restful import Resource, reqparse, marshal
 from app.models import User
 from app import db
 from app.email import send_mail
-from app.utlis.tools import generate_code, set_redis_cache, get_redis_cahe
+from app.utlis.tools import generate_code, set_redis_cache, get_redis_cache
 from sqlalchemy import or_, not_
 from app.user.serializers import UserListSerializer
 
@@ -72,7 +72,7 @@ class Register(Resource):
         if user:
             return {"data": "", "message": "用户已注册", "resCode": 1}
         # 判断验证码
-        code = get_redis_cahe(args["module"] + args["email"])
+        code = get_redis_cache(args["module"] + args["email"])
         if args["code"].upper() != code:
             return {"data": "", "message": "验证码错误", "resCode": 1}
 
