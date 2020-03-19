@@ -55,7 +55,12 @@ class ArticleNewList(Resource):
             Article.timestamp.desc()).paginate(
             args["page"], per_page=args["per_page"], error_out=False
         )
-        data = [marshal(item, ArticleListSerializer) for item in articles.items]
+        # 指定返回字段
+        fields = ["id", "title", "summary", "read", "author", "author_id",
+                  "comments"]
+        serialize = {k: v for k, v in ArticleListSerializer.items() if
+                     k in fields}
+        data = [marshal(item, serialize) for item in articles.items]
 
         return {"data": data, "message": "", "resCode": 0}
 
