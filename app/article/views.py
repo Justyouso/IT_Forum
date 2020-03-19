@@ -6,7 +6,7 @@ from app.models import Article
 from app.article.serializers import ArticleListSerializer, \
     ArticleDetailSerializer
 from app import db
-from sqlalchemy import and_,not_
+from sqlalchemy import and_,not_,desc,asc
 from app.utlis.tools import generate_words
 
 
@@ -39,6 +39,11 @@ class ArticleNewList(Resource):
                                  help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
                                  help="关键词")
+        self.parser.add_argument("order", type=str, default="timestamp",
+                                 trim=True, help="排序字段")
+        self.parser.add_argument("sort", type=str, default="desc",
+                                 choices=["desc", "asc"],
+                                 trim=True, help="排序方式")
 
     def get(self):
         args = self.parser.parse_args()
@@ -50,9 +55,10 @@ class ArticleNewList(Resource):
         if args["keywords"]:
             params = and_(params,
                           Article.body.like("%" + args["keywords"] + "%"))
+        sort = desc(args["order"]) if args["sort"] == "desc" else asc(
+            args["order"])
 
-        articles = Article.query.filter(params).order_by(
-            Article.timestamp.desc()).paginate(
+        articles = Article.query.filter(params).order_by(sort).paginate(
             args["page"], per_page=args["per_page"], error_out=False
         )
         # 指定返回字段
