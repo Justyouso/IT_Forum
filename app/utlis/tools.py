@@ -49,5 +49,5 @@ def generate_code():
 
 def generate_words(string_list):
     """词云列表"""
-    return [{"key": x, "value": w} for x, w in
+    return [{"name": x, "value": w} for x, w in
             analyse.textrank(','.join(string_list), topK=200, withWeight=True)]
