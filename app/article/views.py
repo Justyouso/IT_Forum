@@ -98,6 +98,11 @@ class ArticleWordCloud(Resource):
                                  help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
                                  help="关键词")
+        self.parser.add_argument("order", type=str, default="timestamp",
+                                 trim=True, help="排序字段")
+        self.parser.add_argument("sort", type=str, default="desc",
+                                 choices=["desc", "asc"],
+                                 trim=True, help="排序方式")
 
     def get(self):
         args = self.parser.parse_args()
@@ -113,8 +118,10 @@ class ArticleWordCloud(Resource):
             article_ids = [args["articles"].split(",")]
             params = and_(params, Article.id.in_(article_ids))
 
-        articles = Article.query.filter(params).order_by(
-            Article.timestamp.desc()).paginate(
+        sort = desc(args["order"]) if args["sort"] == "desc" else asc(
+            args["order"])
+
+        articles = Article.query.filter(params).order_by(sort).paginate(
             args["page"], per_page=args["per_page"], error_out=False
         )
 
