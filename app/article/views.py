@@ -139,15 +139,9 @@ class ArticleUpdate(Resource):
 
     def put(self,id):
         args = self.parser.parse_args()
-        article = Article.query.filter_by(id=id).first()
-        if not article:
-            return {"data": "", "message": "文章不存在", "resCode": 1}
-
-        args["article"] = article
-
-        result = Article.create(**args)
+        result = Article.update(id, args["body_html"], args["body_md"])
         if result:
-            data = {"data": "", "message": "添加成功", "resCode": 0}
+            data = {"data": "", "message": "编辑成功", "resCode": 0}
         else:
-            data = {"data": "", "message": "添加失败", "resCode": 1}
+            data = {"data": "", "message": "编辑失败", "resCode": 1}
         return data

@@ -297,7 +297,7 @@ class Article(db.Model):
                              id=article.id,
                              body={"doc": {"body_html": article.body_html,
                                            "author_id": article.author_id,
-                                           "author":article.author.username},
+                                           "author": article.author.username},
                                    'doc_as_upsert': True})
             db.session.commit()
             return True
@@ -329,9 +329,17 @@ class Article(db.Model):
         article.summary = summary
         article.title = title
         article.body = body
+
         try:
+            # elastcisearch的upsert
+            es_client.update(index=config_module.ES_SETTING["index"],
+                         doc_type=config_module.ES_SETTING["doc_type"],
+                         id=article.id,
+                         body={"doc": {"body_html": article.body_html,
+                                       "author_id": article.author_id,
+                                       "author": article.author.username},
+                               'doc_as_upsert': True})
             db.session.commit()
-            # es 操作
             return True
         except Exception as ex:
             print(str(ex))
