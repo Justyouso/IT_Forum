@@ -287,8 +287,47 @@ class Article(db.Model):
             else:
                 article = Article(**kwargs)
                 db.session.add(article)
-
+            from app.exts import es_client
+            from config import config_module
+            es_client.update(index=config_module.ES_SETTING["index"],
+                             doc_type=config_module.ES_SETTING["doc_type"],
+                             id=article.id,
+                             body={"doc": {"body_html": article.body_html,
+                                           "author": article.author_id},
+                                   'doc_as_upsert': True})
             db.session.commit()
+            return True
+        except Exception as ex:
+            print(str(ex))
+            return False
+
+    @staticmethod
+    def update(article_id, body_html, body_md):
+        article = Article.query.filter_by(id=article_id).first()
+        if not article:
+            return False
+
+        # 使用BeautifulSoup提取标题和简要
+        soup = BeautifulSoup(body_html, "html.parser")
+
+        # 获取body
+        body= soup.get_text().replace("\n", "")
+        # 获取标题
+        title = soup.find("h1").text
+        title = title if title else ""
+
+        # 获取摘要,去掉h1标签,且去掉回车符号,且取前100个字符作为简介
+        [s.extract() for s in soup("h1")]
+        summary = soup.get_text().replace("\n", "")[:100]
+
+        article.body_html = body_html
+        article.body_md = body_md
+        article.summary = summary
+        article.title = title
+        article.body = body
+        try:
+            db.session.commit()
+            # es 操作
             return True
         except Exception as ex:
             print(str(ex))

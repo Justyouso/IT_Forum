@@ -127,3 +127,27 @@ class ArticleWordCloud(Resource):
 
         data = generate_words([i.body for i in articles.items])
         return {"data": data, "message": "", "resCode": 0}
+
+
+class ArticleUpdate(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("body_md", type=str, required=True, default="",
+                                 help="文章markdown")
+        self.parser.add_argument("body_html", type=str, required=True,
+                                 default="", help="文章html")
+
+    def put(self,id):
+        args = self.parser.parse_args()
+        article = Article.query.filter_by(id=id).first()
+        if not article:
+            return {"data": "", "message": "文章不存在", "resCode": 1}
+
+        args["article"] = article
+
+        result = Article.create(**args)
+        if result:
+            data = {"data": "", "message": "添加成功", "resCode": 0}
+        else:
+            data = {"data": "", "message": "添加失败", "resCode": 1}
+        return data
