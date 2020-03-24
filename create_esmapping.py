@@ -23,6 +23,9 @@ request_body = {
                 },
                 "author": {
                     "type": "keyword"
+                },
+                "author_id": {
+                    "type": "keyword"
                 }
             }
         }

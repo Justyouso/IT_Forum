@@ -2,14 +2,17 @@
 # @Author: wangchao
 # @Time: 20-3-2 上午9:44
 
+import hashlib
 from datetime import datetime
+
+from bs4 import BeautifulSoup
 from flask import current_app, request
-from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
-import hashlib
-from bs4 import BeautifulSoup
+from app.exts import es_client
+from config import config_module
 
 
 # 角色
@@ -287,13 +290,14 @@ class Article(db.Model):
             else:
                 article = Article(**kwargs)
                 db.session.add(article)
-            from app.exts import es_client
-            from config import config_module
+                db.session.flush()
+            # elastcisearch的upsert
             es_client.update(index=config_module.ES_SETTING["index"],
                              doc_type=config_module.ES_SETTING["doc_type"],
                              id=article.id,
                              body={"doc": {"body_html": article.body_html,
-                                           "author": article.author_id},
+                                           "author_id": article.author_id,
+                                           "author":article.author.username},
                                    'doc_as_upsert': True})
             db.session.commit()
             return True
