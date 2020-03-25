@@ -8,6 +8,7 @@ from app.email import send_mail
 from app.utlis.tools import generate_code, set_redis_cache, get_redis_cache
 from sqlalchemy import or_, not_
 from app.user.serializers import UserListSerializer
+from app.utlis.tools import build_es_query_params
 
 
 class UserNewList(Resource):
@@ -260,5 +261,56 @@ class UserIndexFollow(Resource):
             # 匿名用户所有为未关注
             for i in data:
                 i["is_followed"] = False
+
+        return {"data": data, "message": "", "resCode": 0}
+
+
+class UserHotList(Resource):
+    """
+    通过user获得topic,再将topic在es中进行聚合author
+    """
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("author", type=str, required=True, default="",
+                                 trim=True, help="作者ID")
+        self.parser.add_argument("keywords", type=str, default="", trim=True,
+                                 help="关键词")
+
+    def get(self):
+        args = self.parser.parse_args()
+        user = User.query.filter_by(id=args["author"]).first()
+
+        # 构建es匹配参数
+        es_query_params = {
+            "topic": user.topic,
+            "keywords": args["keywords"],
+            "skip": (args["page"] - 1) * args["per_page"],
+            "size": args["per_page"],
+            "agg": True
+        }
+
+        # 构建es匹配语句
+        search = build_es_query_params(**es_query_params)
+        # 查询es
+        resp = search.execute()
+        # 获取匹配的文章ids
+        author_ids = []
+        data = []
+        # 获取匹配的文章ids
+        for i in resp.aggregations.author.buckets:
+            author_ids.append(i["key"])
+            data.append({
+                "id": int(i["key"]),
+                "count": i["doc_count"]
+            })
+        # 获取作者信息
+        authors = User.query.filter(User.id.in_(author_ids)).all()
+        author_dict = {i.id: i.username for i in list(authors)}
+        # 加入作者姓名
+        for i in data:
+            i["name"] = author_dict.get(i["id"], "")
 
         return {"data": data, "message": "", "resCode": 0}

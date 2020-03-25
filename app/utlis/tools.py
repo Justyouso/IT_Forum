@@ -51,3 +51,51 @@ def generate_words(string_list):
     """词云列表"""
     return [{"name": x, "value": w} for x, w in
             analyse.textrank(','.join(string_list), topK=200, withWeight=True)]
+
+
+def build_es_query_params(topic=None, keywords=None, size=0, skip=0, agg=False):
+    from elasticsearch_dsl import Search
+    from elasticsearch_dsl.query import MatchPhrase, Q
+    from app.exts import es_client
+    from config import config_module
+    # 创建Search对象
+    search = Search(using=es_client,
+                    index=config_module.ES_SETTING["index"],
+                    doc_type=config_module.ES_SETTING["index"])
+    kws_query_dict = {}
+    if topic:
+        topic_kws_dict = [MatchPhrase(body_html=kw) for kw in topic.split(",")]
+        kws_query_dict["topic"] = Q("bool", should=topic_kws_dict)
+
+    if keywords:
+        topic_kws_dict = [MatchPhrase(body_html=kw) for kw in topic.spilt(",")]
+        kws_query_dict["topic"] = Q("bool", must=topic_kws_dict)
+
+    search = search.source(["aggregations"])
+
+    # 查询条件组装完成
+    search = search.query("bool", must=[v for k, v in kws_query_dict.items()])
+
+    if agg:
+        search.aggs.bucket("author", "terms", size=100, field="author_id")
+
+    # 添加其他参数
+    other_params_dict = {}
+
+    # 翻页 & 每页数量
+    if skip != 0:
+        other_params_dict.update({"from": skip})
+    if size != 0:
+        other_params_dict.update({"size": size})
+
+    # 如果有聚合字段,不必返回匹配实体
+    if agg:
+        other_params_dict["size"] = 0
+
+    # 设置最小分数
+    other_params_dict["track_scores"] = True
+    other_params_dict["min_score"] = 0
+
+    if other_params_dict:
+        search = search.update_from_dict(other_params_dict)
+    return search

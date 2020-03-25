@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 # @Author: wangchao
 # @Time: 20-3-2 上午9:15
-from flask_restful import Resource, reqparse,marshal
-from app.models import Article
+from flask_restful import Resource, reqparse, marshal
+from sqlalchemy import and_, desc, asc
+
+from app import db
 from app.article.serializers import ArticleListSerializer, \
     ArticleDetailSerializer
-from app import db
-from sqlalchemy import and_,not_,desc,asc
+from app.models import Article, User
+from app.utlis.tools import build_es_query_params
 from app.utlis.tools import generate_words
 
 
@@ -145,3 +147,89 @@ class ArticleUpdate(Resource):
         else:
             data = {"data": "", "message": "编辑失败", "resCode": 1}
         return data
+
+
+class ArticleHotList(Resource):
+    """
+    通过user获得topic,再将topic在es中进行短语匹配
+    """
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("author", type=str, required=True, default="",
+                                 trim=True, help="作者ID")
+        self.parser.add_argument("keywords", type=str, default="", trim=True,
+                                 help="关键词")
+
+    def get(self):
+        args = self.parser.parse_args()
+        user = User.query.filter_by(id=args["author"]).first()
+
+        # 构建es匹配参数
+        es_query_params = {
+            "topic": user.topic,
+            "keywords": args["keywords"],
+            "skip": (args["page"] - 1) * args["per_page"],
+            "size": args["per_page"]
+        }
+
+        # 构建es匹配语句
+        search = build_es_query_params(**es_query_params)
+        # 查询es
+        resp = search.execute()
+        # 获取匹配的文章ids
+        article_ids = [i["_id"] for i in resp.hits.hits]
+        # 使用es查询出的文章id,取出相应文章数据
+        articles = Article.query.filter(Article.id.in_(article_ids)).all()
+        # 指定返回字段
+        fields = ["id", "title", "summary", "read", "author", "author_id",
+                  "comments"]
+        serialize = {k: v for k, v in ArticleListSerializer.items() if
+                     k in fields}
+        result = [marshal(item, serialize) for item in articles]
+        # 根据article_ids的顺序进行排序
+        result_dict = {i["id"]: i for i in result}
+        data = [result_dict.get(id) for id in article_ids]
+        return {"data": data, "message": "", "resCode": 0}
+
+
+class ArticleHotWordCloud(Resource):
+    """
+    通过user获得topic,再将topic在es中进行短语匹配,查询出文章再生成词云
+    """
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("author", type=str, required=True, default="",
+                                 trim=True, help="作者ID")
+        self.parser.add_argument("keywords", type=str, default="", trim=True,
+                                 help="关键词")
+
+    def get(self):
+        args = self.parser.parse_args()
+        user = User.query.filter_by(id=args["author"]).first()
+
+        # 构建es匹配参数
+        es_query_params = {
+            "topic": user.topic,
+            "keywords": args["keywords"],
+            "skip": (args["page"] - 1) * args["per_page"],
+            "size": args["per_page"]
+        }
+
+        # 构建es匹配语句
+        search = build_es_query_params(**es_query_params)
+        # 查询es
+        resp = search.execute()
+        # 获取匹配的文章ids
+        article_ids = [i["_id"] for i in resp.hits.hits]
+        # 使用es查询出的文章id,取出相应文章数据
+        articles = Article.query.filter(Article.id.in_(article_ids)).all()
+
+        # 生成词云
+        data = generate_words([i.body for i in articles])
+        return {"data": data, "message": "", "resCode": 0}
