@@ -158,8 +158,8 @@ class ArticleHotList(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
         self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
-        self.parser.add_argument("author", type=str, required=True, default="",
-                                 trim=True, help="作者ID")
+        self.parser.add_argument("author", type=str, default="8", trim=True,
+                                 help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
                                  help="关键词")
 
@@ -204,8 +204,8 @@ class ArticleHotWordCloud(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
         self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
-        self.parser.add_argument("author", type=str, required=True, default="",
-                                 trim=True, help="作者ID")
+        self.parser.add_argument("author", type=str, default="8", trim=True,
+                                 help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
                                  help="关键词")
 
