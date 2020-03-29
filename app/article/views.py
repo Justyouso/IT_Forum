@@ -233,3 +233,47 @@ class ArticleHotWordCloud(Resource):
         # 生成词云
         data = generate_words([i.body for i in articles])
         return {"data": data, "message": "", "resCode": 0}
+
+
+class ArticleSearchList(Resource):
+    """
+    通过获取关键词在es中进行短语匹配
+    """
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("keywords", type=str, default="", trim=True,
+                                 help="关键词")
+
+    def get(self):
+        args = self.parser.parse_args()
+
+        # 构建es匹配参数
+        es_query_params = {
+            "keywords": args["keywords"],
+            "skip": (args["page"] - 1) * args["per_page"],
+            "size": args["per_page"]
+        }
+
+        # 构建es匹配语句
+        search = build_es_query_params(**es_query_params)
+        # 查询es
+        resp = search.execute()
+        # 获取匹配的文章ids
+        article_ids = [i["_id"] for i in resp.hits.hits]
+        # 使用es查询出的文章id,取出相应文章数据
+        articles = Article.query.filter(Article.id.in_(article_ids)).all()
+        # 指定返回字段
+        fields = ["id", "title", "summary", "read", "author", "author_id",
+                  "comments"]
+        serialize = {k: v for k, v in ArticleListSerializer.items() if
+                     k in fields}
+        result = [marshal(item, serialize) for item in articles]
+        # 根据article_ids的顺序进行排序
+        result_dict = {i["id"]: i for i in result}
+        data = [result_dict.get(id) for id in article_ids]
+
+        return {"data": data, "total": resp.hits.total, "message": "",
+                "resCode": 0}

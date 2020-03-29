@@ -2,12 +2,15 @@
 # @Author: wangchao
 # @Time: 20-3-2 下午8:47
 
-from app import redis_client
-
 import random
-import jieba
+
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.query import MatchPhrase, Q
 from jieba import analyse
-from config import basedir
+
+from app import redis_client
+from app.exts import es_client
+from config import config_module
 
 
 def set_redis_cache(key, value, time=600):
@@ -18,7 +21,6 @@ def set_redis_cache(key, value, time=600):
     :param time: 缓存时间
     :return: 
     """
-    import json
     result = True
     try:
         redis_client.set(key, value, time)
@@ -54,10 +56,15 @@ def generate_words(string_list):
 
 
 def build_es_query_params(topic=None, keywords=None, size=0, skip=0, agg=False):
-    from elasticsearch_dsl import Search
-    from elasticsearch_dsl.query import MatchPhrase, Q
-    from app.exts import es_client
-    from config import config_module
+    """
+    
+    :param topic: 用户的主题
+    :param keywords: 关键词,以逗号隔开
+    :param size: 每页多少条
+    :param skip: 跳过多少条
+    :param agg: 是否聚合
+    :return: es_dsl
+    """
     # 创建Search对象
     search = Search(using=es_client,
                     index=config_module.ES_SETTING["index"],
@@ -68,8 +75,8 @@ def build_es_query_params(topic=None, keywords=None, size=0, skip=0, agg=False):
         kws_query_dict["topic"] = Q("bool", should=topic_kws_dict)
 
     if keywords:
-        topic_kws_dict = [MatchPhrase(body_html=kw) for kw in topic.spilt(",")]
-        kws_query_dict["topic"] = Q("bool", must=topic_kws_dict)
+        kws_dict = [MatchPhrase(body_html=kw) for kw in keywords.split(",")]
+        kws_query_dict["keywords"] = Q("bool", should=kws_dict)
 
     search = search.source(["aggregations"])
 
