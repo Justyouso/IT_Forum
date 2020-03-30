@@ -9,6 +9,7 @@ from app.utlis.tools import generate_code, set_redis_cache, get_redis_cache
 from sqlalchemy import or_, not_
 from app.user.serializers import UserListSerializer
 from app.utlis.tools import build_es_query_params
+from sqlalchemy import and_,desc,asc
 
 
 class UserNewList(Resource):
@@ -274,7 +275,8 @@ class UserHotList(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
         self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
-        self.parser.add_argument("author", type=str, default="8",trim=True, help="作者ID")
+        self.parser.add_argument("author", type=str, default="8", trim=True,
+                                 help="作者ID")
         self.parser.add_argument("keywords", type=str, default="", trim=True,
                                  help="关键词")
 
@@ -313,3 +315,63 @@ class UserHotList(Resource):
             i["name"] = author_dict.get(i["id"], "")
 
         return {"data": data, "message": "", "resCode": 0}
+
+
+class UserSearchList(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
+        self.parser.add_argument("user", type=str, help="用户Id")
+        self.parser.add_argument("keywords", type=str, help="关键词,以逗号隔开")
+        self.parser.add_argument("order", type=str, default="timestamp",
+                                 trim=True, help="排序字段")
+        self.parser.add_argument("sort", type=str, default="desc",
+                                 choices=["desc", "asc"],
+                                 trim=True, help="排序方式")
+
+    def get(self):
+        args = self.parser.parse_args()
+        # 组装查询参数
+        params = and_()
+        if args["keywords"]:
+            params = and_(params,
+                          User.username.like("%" + args["keywords"] + "%"))
+        sort = desc(args["order"]) if args["sort"] == "desc" else asc(
+            args["order"])
+        authors = User.query.filter(params).order_by(sort).paginate(
+            args["page"], per_page=args["per_page"], error_out=False
+        )
+        if not authors.total:
+            return {"data": [], "message": "", "resCode": 0}
+        # 获取作者关注的人
+        # f_data = author.followed.all() \
+        #     if args["type"] == "followed" else author.followers.all()
+        data = []
+
+        for item in authors.items:
+            f = item
+            tmp = {
+                "id": f.id,
+                "name": f.username,
+                "followed": f.followed.count(),
+                "fans": f.followers.count(),
+                "articles": f.article.count(),
+                "is_followed": True
+            }
+            data.append(tmp)
+
+        # 判断用户是否存在，用户不存在即匿名用户
+        if args["user"]:
+            user = User.query.filter_by(id=args["user"]).first()
+            # 若用户和作者不想相等，则需要一个个去判断作者关注的人是否被用户关注
+            if args["user"] != id:
+                for i in data:
+                    i["is_followed"] = user.is_following_by_id(i["id"])
+        else:
+            # 匿名用户所有为未关注
+            for i in data:
+                i["is_followed"] = False
+
+        return {"data": data, "total": authors.total, "message": "",
+                "resCode": 0}
