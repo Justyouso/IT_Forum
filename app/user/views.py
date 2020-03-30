@@ -345,18 +345,15 @@ class UserSearchList(Resource):
         if not authors.total:
             return {"data": [], "message": "", "resCode": 0}
         # 获取作者关注的人
-        # f_data = author.followed.all() \
-        #     if args["type"] == "followed" else author.followers.all()
         data = []
-
         for item in authors.items:
-            f = item
             tmp = {
-                "id": f.id,
-                "name": f.username,
-                "followed": f.followed.count(),
-                "fans": f.followers.count(),
-                "articles": f.article.count(),
+                "id": item.id,
+                "name": item.username,
+                "about_me": item.about_me,
+                "followed": item.followed.count(),
+                "fans": item.followers.count(),
+                "articles": item.article.count(),
                 "is_followed": True
             }
             data.append(tmp)
