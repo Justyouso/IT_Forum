@@ -26,7 +26,8 @@ def register_middleware(app, middlewares):
 
 business_modules = [
     "app.user:user",
-    "app.article:article"
+    "app.article:article",
+    "app.comment:comment"
 ]
 
 
