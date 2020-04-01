@@ -11,7 +11,8 @@ CommentListSerializer = {
     "author": AuthorFormatter(default=""),
     "article_id": fields.String(default=""),
     "disabled": fields.Boolean(default=True),
-    "body_html": fields.Integer,
+    "body_html": fields.String(default=""),
+    "timestamp":fields.String(default="")
 }
 
 ArticleDetailSerializer = {

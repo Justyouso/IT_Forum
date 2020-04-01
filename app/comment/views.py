@@ -64,7 +64,7 @@ class CommentList(Resource):
             args["page"], per_page=args["per_page"], error_out=False
         )
         # 指定返回字段
-        fields = ["id", "body", "author_id", "author", "article_id"]
+        fields = ["id", "body", "author_id", "author", "article_id","timestamp"]
         serialize = {k: v for k, v in CommentListSerializer.items() if
                      k in fields}
         data = [marshal(item, serialize) for item in comment.items]
