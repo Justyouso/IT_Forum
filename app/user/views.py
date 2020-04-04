@@ -222,6 +222,8 @@ class UserIndex(Resource):
 class UserIndexFollow(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
+        self.parser.add_argument("page", type=int, default=1, help="页数")
+        self.parser.add_argument("per_page", type=int, default=10, help="每页数量")
         self.parser.add_argument("user", type=str, help="用户Id")
         self.parser.add_argument("type", type=str, required=True,
                                  default="fans", choices=["followed", "fans"],
@@ -233,13 +235,15 @@ class UserIndexFollow(Resource):
         if not author:
             return {"data": "", "message": "作者不存在", "resCode": 1}
         # 获取作者关注的人
-        f_data = author.followed.all() \
-            if args["type"] == "followed" else author.followers.all()
+        f_data = author.followed if args["type"] == "followed" \
+            else author.followers
+        f_data = f_data.paginate(
+            args["page"], per_page=args["per_page"], error_out=False)
         data = []
 
         # 判断获取关注列表还是粉丝列表
 
-        for item in f_data:
+        for item in f_data.items:
             f = item.followed if args["type"] == "followed" else item.follower
             tmp = {
                 "id": f.id,
@@ -263,7 +267,8 @@ class UserIndexFollow(Resource):
             for i in data:
                 i["is_followed"] = False
 
-        return {"data": data, "message": "", "resCode": 0}
+        return {"data": data, "total": f_data.total, "message": "",
+                "resCode": 0}
 
 
 class UserHotList(Resource):
