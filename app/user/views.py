@@ -204,6 +204,14 @@ class UserFollow(Resource):
 
 
 class UserIndex(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("username", type=str, default="",
+                                 trim=True, help="用户名")
+        self.parser.add_argument("summary", type=str, default="",
+                                 trim=True, help="简介")
+        self.parser.add_argument("topic", type=str, default="",
+                                 trim=True, help="主题")
     def get(self, id):
         user = User.query.filter_by(id=id).first()
         if not user:
@@ -214,10 +222,25 @@ class UserIndex(Resource):
             "fans": user.followers.count(),
             "articles": user.article.count(),
             "about_me": user.about_me,
-            "id":user.id
+            "id": user.id,
+            "topic": user.topic.split(",")
         }
 
         return {"data": data, "message": "", "resCode": 0}
+
+    def put(self, id):
+        args = self.parser.parse_args()
+        user = User.query.filter_by(id=id).first()
+        user.username = args["username"]
+        user.summary = args["summary"]
+        user.topic = args["topic"]
+        try:
+            db.session.add(user)
+            db.session.commit()
+            result = {"data": "", "message": "", "resCode": 0}
+        except Exception as ex:
+            result = {"data": "", "message": "更改失败", "resCode": 0}
+        return result
 
 
 class UserIndexFollow(Resource):
