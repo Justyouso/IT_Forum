@@ -208,7 +208,7 @@ class UserIndex(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("username", type=str, default="",
                                  trim=True, help="用户名")
-        self.parser.add_argument("summary", type=str, default="",
+        self.parser.add_argument("about_me", type=str, default="",
                                  trim=True, help="简介")
         self.parser.add_argument("topic", type=str, default="",
                                  trim=True, help="主题")
@@ -232,7 +232,7 @@ class UserIndex(Resource):
         args = self.parser.parse_args()
         user = User.query.filter_by(id=id).first()
         user.username = args["username"]
-        user.summary = args["summary"]
+        user.about_me = args["about_me"]
         user.topic = args["topic"]
         try:
             db.session.add(user)
