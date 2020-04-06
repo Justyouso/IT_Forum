@@ -213,7 +213,8 @@ class UserIndex(Resource):
             "followed": user.followed.count(),
             "fans": user.followers.count(),
             "articles": user.article.count(),
-            "about_me": user.about_me
+            "about_me": user.about_me,
+            "id":user.id
         }
 
         return {"data": data, "message": "", "resCode": 0}
