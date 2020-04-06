@@ -221,7 +221,7 @@ class UserIndex(Resource):
             "followed": user.followed.count(),
             "fans": user.followers.count(),
             "articles": user.article.count(),
-            "about_me": user.about_me,
+            "about_me": user.about_me if user.about_me else '',
             "id": user.id,
             "topic": user.topic.split(",")
         }
