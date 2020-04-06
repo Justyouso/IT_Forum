@@ -237,9 +237,9 @@ class UserIndex(Resource):
         try:
             db.session.add(user)
             db.session.commit()
-            result = {"data": "", "message": "", "resCode": 0}
+            result = {"data": "更新成功", "message": "", "resCode": 0}
         except Exception as ex:
-            result = {"data": "", "message": "更改失败", "resCode": 0}
+            result = {"data": "", "message": "更新失败", "resCode": 0}
         return result
 
 
