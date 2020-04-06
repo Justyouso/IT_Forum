@@ -251,7 +251,8 @@ class UserIndexFollow(Resource):
                 "followed": f.followed.count(),
                 "fans": f.followers.count(),
                 "articles": f.article.count(),
-                "is_followed": True
+                "is_followed": True,
+                "about_me":f.about_me
             }
             data.append(tmp)
 
