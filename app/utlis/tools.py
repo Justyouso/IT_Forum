@@ -80,8 +80,13 @@ def build_es_query_params(topic=None, keywords=None, size=0, skip=0, agg=False):
 
     search = search.source(["aggregations"])
 
+
     # 查询条件组装完成
-    search = search.query("bool", must=[v for k, v in kws_query_dict.items()])
+    if kws_query_dict:
+        search = search.query("bool",
+                              must=[v for k, v in kws_query_dict.items()])
+    else:
+        search = search.query({"match_all": {}})
 
     if agg:
         search.aggs.bucket("author", "terms", size=100, field="author_id")

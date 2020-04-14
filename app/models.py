@@ -96,7 +96,7 @@ class User(db.Model):
                                 lazy='dynamic', cascade='all,delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy='dynamic',
                                doc="评论")
-    topic = db.Column(db.String(128), doc="用户关注的主题")
+    topic = db.Column(db.String(1024), default="", doc="用户关注的主题")
     timestamp = db.Column(db.DateTime, index=True,
                           default=datetime.utcnow)
 
