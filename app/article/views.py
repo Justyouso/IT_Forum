@@ -277,3 +277,8 @@ class ArticleSearchList(Resource):
 
         return {"data": data, "total": resp.hits.total, "message": "",
                 "resCode": 0}
+
+
+class TestService(Resource):
+    def get(self):
+        return {"data": "服务正常", "resCode": 0, "message": ""}
