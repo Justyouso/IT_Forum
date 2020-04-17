@@ -281,4 +281,4 @@ class ArticleSearchList(Resource):
 
 class TestService(Resource):
     def get(self):
-        return {"data": "服务正常", "resCode": 0, "message": ""}
+        return "服务正常"
