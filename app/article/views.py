@@ -74,6 +74,7 @@ class ArticleNewList(Resource):
 
 
 class ArticleDetail(Resource):
+    """文章详情"""
     def get(self, id):
         article = Article.query.filter_by(id=id).first()
         if article:
@@ -151,9 +152,8 @@ class ArticleUpdate(Resource):
 
 class ArticleHotList(Resource):
     """
-    通过user获得topic,再将topic在es中进行短语匹配
+    文章推荐,通过user获得topic,再将topic在es中进行短语匹配
     """
-
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")
@@ -237,7 +237,7 @@ class ArticleHotWordCloud(Resource):
 
 class ArticleSearchList(Resource):
     """
-    通过获取关键词在es中进行短语匹配
+    文章搜索,通过获取关键词在es中进行短语匹配
     """
 
     def __init__(self):

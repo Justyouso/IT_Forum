@@ -27,10 +27,10 @@ class Permission:
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True, doc="名称")
-    default = db.Column(db.Boolean, default=False, index=True)
-    permissions = db.Column(db.Integer)
-    users = db.relationship('User', backref='role', lazy='dynamic')
+    name = db.Column(db.String(64), unique=True, doc="权限名称")
+    default = db.Column(db.Boolean, default=False, index=True, doc="是否默认")
+    permissions = db.Column(db.Integer, doc="权限等级")
+    users = db.relationship('User', backref='role', lazy='dynamic', doc="用户")
 
     def __repr__(self):
         return '<Role % r>' % self.name
@@ -354,12 +354,12 @@ class Article(db.Model):
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text)
-    body_html = db.Column(db.Text)
+    body = db.Column(db.Text,doc="评论内容")
+    body_html = db.Column(db.Text,doc="评论html")
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    disabled = db.Column(db.Boolean,default=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'))
+    disabled = db.Column(db.Boolean,default=True,doc="是否显示")
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'),doc="用户ID")
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'),doc="文章ID")
 
 
 # db.event.listen(Comment.body, 'set', Comment.on_changed_body)

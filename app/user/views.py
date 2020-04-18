@@ -49,6 +49,7 @@ class UserNewList(Resource):
 
 
 class Register(Resource):
+    """用户注册"""
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("email", type=str, required=True, default="",
@@ -115,19 +116,13 @@ class SecurityCode(Resource):
 
 
 class Login(Resource):
+    """用户登录"""
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("email", type=str, required=True, default="",
                                  trim=True, help="邮箱")
         self.parser.add_argument("password", type=str, required=True,
                                  default="", trim=True, help="密码")
-        # self.parser.add_argument("code", type=str, required=True,
-        #                          default="", trim=True, help="密码")
-        # self.parser.add_argument("module", type=str, required=True,
-        #                          default="", trim=True, help="模块值",
-        #                          choices=["login", "register", "forget",
-        #                                   "other"])
-
     def post(self):
         args = self.parser.parse_args()
 
@@ -136,11 +131,6 @@ class Login(Resource):
         # 验证用户是否存在
         if not user:
             return {"data": "", "message": "用户不存在", "resCode": 1}
-
-        # 判断验证码
-        # code = get_redis_cahe(args["module"] + args["email"])
-        # if args["code"].upper() != code:
-        #     return {"data": "", "message": "验证码错误", "resCode": 1}
 
         # 验证密码
         if not user.verify_password(args["password"]):
@@ -158,6 +148,7 @@ class Login(Resource):
 
 
 class UserFollow(Resource):
+    """关注 取消关注 判断用户是否关注"""
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("user", type=int, required=True, help="用户Id")
@@ -204,6 +195,7 @@ class UserFollow(Resource):
 
 
 class UserIndex(Resource):
+    """用户信息"""
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("username", type=str, default="",
@@ -213,6 +205,7 @@ class UserIndex(Resource):
         self.parser.add_argument("topic", type=str, default="",
                                  trim=True, help="主题")
     def get(self, id):
+        """获取用户信息"""
         user = User.query.filter_by(id=id).first()
         if not user:
             return {"data": "", "message": "用户不存在", "resCode": 1}
@@ -229,6 +222,7 @@ class UserIndex(Resource):
         return {"data": data, "message": "", "resCode": 0}
 
     def put(self, id):
+        """修改用户信息"""
         args = self.parser.parse_args()
         user = User.query.filter_by(id=id).first()
         user.username = args["username"]
@@ -348,6 +342,7 @@ class UserHotList(Resource):
 
 
 class UserSearchList(Resource):
+    """用户搜索"""
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("page", type=int, default=1, help="页数")

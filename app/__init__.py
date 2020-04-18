@@ -7,6 +7,10 @@ from werkzeug.utils import import_string
 
 from app.exts import db, redis_client,mail
 from flask_cors import CORS
+from flask_admin import Admin, BaseView, expose
+from flask_babelex import Babel
+from app.admin import adminView
+
 
 
 def register_extensions(app):
@@ -24,6 +28,11 @@ def register_middleware(app, middlewares):
     pass
 
 
+def admin(app):
+    admin = Admin(app, "后台管理系统")
+    adminView(admin)
+
+
 business_modules = [
     "app.user:user",
     "app.article:article",
@@ -35,6 +44,7 @@ def create_app(config):
     app = Flask(__name__)
     app.config.from_object(config)
     config.init_app(app)
+    Babel(app)
     CORS(app)
     # db
     db.init_app(app)
@@ -42,7 +52,9 @@ def create_app(config):
     mail.init_app(app)
     # redis
     redis_client.init_app(app)
+    admin(app)
     # register_middleware(app, AuthMiddleware)
     # register_extensions(app)
     register_blueprints(app, business_modules)
+
     return app

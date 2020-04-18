@@ -57,7 +57,7 @@ def generate_words(string_list):
 
 def build_es_query_params(topic=None, keywords=None, size=0, skip=0, agg=False):
     """
-    
+    组装elasticsearch查询dsl
     :param topic: 用户的主题
     :param keywords: 关键词,以逗号隔开
     :param size: 每页多少条
