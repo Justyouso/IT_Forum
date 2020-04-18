@@ -7,9 +7,11 @@ from sqlalchemy import and_, desc, asc
 from app import db
 from app.article.serializers import ArticleListSerializer, \
     ArticleDetailSerializer
+from app.exts import es_client
 from app.models import Article, User
 from app.utlis.tools import build_es_query_params
 from app.utlis.tools import generate_words
+from config import config_module
 
 
 class ArticleCreate(Resource):
@@ -75,6 +77,11 @@ class ArticleNewList(Resource):
 
 class ArticleDetail(Resource):
     """文章详情"""
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("author", type=str, help="用户ID")
+
     def get(self, id):
         article = Article.query.filter_by(id=id).first()
         if article:
@@ -87,6 +94,27 @@ class ArticleDetail(Resource):
                     "message": "", "resCode": 0}
         else:
             data = {"data": "", "message": "文章不存在", "resCode": 1}
+        return data
+
+    def delete(self, id):
+        args = self.parser.parse_args()
+        article = Article.query.filter_by(id=id,
+                                          author_id=args["author"]).first()
+        if article:
+            try:
+                db.session.delete(article)
+                db.session.commit()
+                es_client.delete(index=config_module.ES_SETTING["index"],
+                                 doc_type=config_module.ES_SETTING["doc_type"],
+                                 id=id)
+                data = {"data":"","message": "", "resCode": 0}
+            except Exception as ex:
+                print(ex)
+                data = {"data":"","message": "删除失败", "resCode": 1}
+
+        else:
+            data = {"data": "", "message": "文章不存在", "resCode": 1}
+
         return data
 
 
