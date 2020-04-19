@@ -6,7 +6,7 @@ from sqlalchemy import and_, desc, asc
 
 from app import db
 from app.comment.serializers import CommentListSerializer
-from app.models import Comment
+from app.models import Comment,User
 
 
 class CommentCreate(Resource):
@@ -27,7 +27,12 @@ class CommentCreate(Resource):
                               body=args["body"])
             db.session.add(comment)
             db.session.commit()
-            data = {"data": "", "message": "评论成功", "resCode": 0}
+            # 指定返回字段
+            fields = ["id", "body", "author_id", "author", "article_id",
+                      "timestamp"]
+            serialize = {k: v for k, v in CommentListSerializer.items() if
+                         k in fields}
+            data = {"data": marshal(comment, serialize), "message": "评论成功", "resCode": 0}
         except Exception as ex:
             data = {"data": "", "message": "评论失败", "resCode": 1}
         return data
@@ -89,9 +94,10 @@ class CommentDetail(Resource):
 
         if not comment:
             comment_tmp = Comment.query.filter_by(id=id).first()
+            user = User.query.filter_by(id=args["author"]).first()
             if comment_tmp.author.id == args["author"]:
                 comment = comment_tmp
-            elif comment_tmp.author.role.permissions > 7:
+            elif user.role.permissions > 7:
                 comment = comment_tmp
             else:
                 comment = None

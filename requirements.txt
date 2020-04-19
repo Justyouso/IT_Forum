@@ -13,3 +13,5 @@ flask_redis==0.4.0
 flask_cors==3.0.8
 bs4==0.0.1
 jieba==0.42.1
+flask_admin==1.5.4
+flask_babelex==0.9.4
