@@ -72,3 +72,38 @@ class CommentList(Resource):
 
         return {"data": data, "total": comment.total, "message": "",
                 "resCode": 0}
+
+
+class CommentDetail(Resource):
+    """评论详情"""
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("author", type=str, help="用户ID")
+
+    def delete(self, id):
+        args = self.parser.parse_args()
+        # 用户自己删除评论
+        comment = Comment.query.filter_by(id=id,
+                                          author_id=args["author"]).first()
+
+        if not comment:
+            comment_tmp = Comment.query.filter_by(id=id).first()
+            if comment_tmp.author.id == args["author"]:
+                comment = comment_tmp
+            elif comment_tmp.author.role.permissions > 7:
+                comment = comment_tmp
+            else:
+                comment = None
+        if comment:
+            try:
+                db.session.delete(comment)
+                db.session.commit()
+                data = {"data": "", "message": "", "resCode": 0}
+            except Exception as ex:
+                print(ex)
+                data = {"data": "", "message": "删除失败", "resCode": 1}
+        else:
+            data = {"data": "", "message": "评论不存在", "resCode": 1}
+
+        return data
