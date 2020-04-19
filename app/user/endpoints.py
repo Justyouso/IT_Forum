@@ -5,7 +5,7 @@
 from flask import Blueprint
 from flask_restful import Api
 from app.user.views import UserNewList, Register, SecurityCode, Login, \
-    UserFollow, UserIndex, UserIndexFollow, UserHotList, UserSearchList
+    UserFollow, UserIndex, UserIndexFollow, UserHotList, UserSearchList,PwdUpdate
 
 user = Blueprint("user", __name__)
 _api = Api(user)
@@ -27,3 +27,6 @@ _api.add_resource(UserIndexFollow, "/index/follows/<string:id>")
 
 _api.add_resource(UserHotList, "/hot/list")
 _api.add_resource(UserSearchList, "/search")
+
+# 修改密码
+_api.add_resource(PwdUpdate, "/pwd-edit")

@@ -397,3 +397,37 @@ class UserSearchList(Resource):
 
         return {"data": data, "total": authors.total, "message": "",
                 "resCode": 0}
+
+
+class PwdUpdate(Resource):
+    """密码修改"""
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("email", type=str, required=True, default="",
+                                 trim=True, help="邮箱")
+        self.parser.add_argument("password", type=str, required=True,
+                                 default="", trim=True, help="密码")
+        self.parser.add_argument("code", type=str, required=True,
+                                 default="", trim=True, help="验证码")
+        self.parser.add_argument("module", type=str, required=True,
+                                 default="", trim=True, help="模块值",
+                                 choices=["login", "register", "forget",
+                                          "other"])
+
+    def post(self):
+        args = self.parser.parse_args()
+
+        # 先查询是否存在
+        user = User.query.filter(User.email == args["email"]).first()
+        if not user:
+            return {"data": "", "message": "用户不存在", "resCode": 1}
+        # 判断验证码
+        code = get_redis_cache(args["module"] + args["email"])
+        if args["code"].upper() != code:
+            return {"data": "", "message": "验证码错误", "resCode": 1}
+        user.password = args["password"]
+        db.session.add(user)
+        db.session.commit()
+
+        return {"data": "", "message": "修改成功", "resCode": 0}
