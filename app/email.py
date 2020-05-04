@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Author: wangchao
+# @Author: dmq
 # @Time: 19-6-4 下午4:58
 from flask_mail import Message
 

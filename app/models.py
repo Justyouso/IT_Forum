@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Author: wangchao
+# @Author: dmq
 # @Time: 20-3-2 上午9:44
 
 import hashlib

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Author: wangchao
+# @Author: dmq
 # @Time: 20-3-2 上午9:15
 from flask_restful import Resource, reqparse, marshal
 from app.models import User

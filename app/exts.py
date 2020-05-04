@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# author: boe
+# author: dmq
 
 from concurrent.futures.thread import ThreadPoolExecutor
 
